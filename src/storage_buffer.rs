@@ -2,9 +2,9 @@ use crate::data::SeriesData;
 use std::io::Write;
 
 pub trait StorageBuffer<T: SeriesData, W: Write> {
-    /// Inserts the data into the buffer.
+    /// Push the data to the buffer.
     /// If it must be flushed, then true is returned.
-    fn insert(&mut self, data: T) -> Result<bool, std::io::Error>;
+    fn push(&mut self, data: T) -> Result<bool, std::io::Error>;
     /// Empties the buffer into the given write object.
     fn flush_into(&mut self, target: &mut W) -> Result<(), std::io::Error>;
 }
@@ -20,7 +20,7 @@ impl<T: SeriesData> Unbuffered<T> {
 }
 
 impl<T: SeriesData, W: Write> StorageBuffer<T, W> for Unbuffered<T> {
-    fn insert(&mut self, data: T) -> Result<bool, std::io::Error> {
+    fn push(&mut self, data: T) -> Result<bool, std::io::Error> {
         self.buffer = Some(data);
         Ok(true)
     }
@@ -47,7 +47,7 @@ impl HeapBuffer {
 }
 
 impl<T: SeriesData, W: Write> StorageBuffer<T, W> for HeapBuffer {
-    fn insert(&mut self, data: T) -> Result<bool, std::io::Error> {
+    fn push(&mut self, data: T) -> Result<bool, std::io::Error> {
         // Extend the buffer.
         // This is safe because the length is never bigger than the capacity
         // and the new data is initialized.
